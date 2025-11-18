@@ -4,10 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { Sparkles, Instagram, Music, Zap, TrendingUp, Target } from "lucide-react";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      setLocation("/dashboard");
+    }
+  }, [user, loading, setLocation]);
 
   if (loading) {
     return (
@@ -17,8 +25,8 @@ export default function Home() {
     );
   }
 
+  // Don't render landing page if user is authenticated (will redirect via useEffect)
   if (user) {
-    setLocation("/dashboard");
     return null;
   }
 

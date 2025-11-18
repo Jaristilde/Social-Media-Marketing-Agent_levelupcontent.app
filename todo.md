@@ -40,3 +40,6 @@
 - [x] Write vitest tests for CRUD operations
 - [x] Test end-to-end user workflows
 - [x] Create initial checkpoint
+
+## Bug Fixes
+- [x] Fix React render error in Home component - navigation during render phase
