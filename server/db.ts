@@ -188,7 +188,9 @@ export async function createCampaign(campaign: InsertCampaign) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(campaigns).values(campaign) as any;
-  return { id: Number(result.insertId), ...campaign };
+  const insertId = result.insertId || result[0]?.insertId;
+  if (!insertId) throw new Error("Failed to get insert ID");
+  return { id: Number(insertId), ...campaign };
 }
 
 export async function updateCampaign(id: number, updates: Partial<InsertCampaign>) {
@@ -200,5 +202,22 @@ export async function updateCampaign(id: number, updates: Partial<InsertCampaign
 export async function deleteCampaign(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // First, remove campaign association from content
+  await db.update(contentLibrary).set({ campaignId: null }).where(eq(contentLibrary.campaignId, id));
+  // Then delete the campaign
   await db.delete(campaigns).where(eq(campaigns.id, id));
+}
+
+export async function getCampaignById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(campaigns).where(eq(campaigns.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function assignContentToCampaign(contentId: number, campaignId: number | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(contentLibrary).set({ campaignId }).where(eq(contentLibrary.id, contentId));
+  return { success: true };
 }

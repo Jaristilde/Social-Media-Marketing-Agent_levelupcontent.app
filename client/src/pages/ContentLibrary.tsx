@@ -36,8 +36,16 @@ export default function ContentLibrary() {
   const [editContent, setEditContent] = useState("");
   const [editHashtags, setEditHashtags] = useState("");
   const [editStatus, setEditStatus] = useState<"draft" | "published" | "archived">("draft");
+  
+  // Campaign assignment state
+  const [assigningItem, setAssigningItem] = useState<any>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("none");
 
   const { data: content, isLoading, refetch } = trpc.content.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+  
+  const { data: campaigns } = trpc.campaigns.list.useQuery(undefined, {
     enabled: !!user,
   });
 
@@ -59,6 +67,18 @@ export default function ContentLibrary() {
     },
     onError: (error) => {
       toast.error(`Failed to update: ${error.message}`);
+    },
+  });
+  
+  const assignCampaignMutation = trpc.campaigns.assignContent.useMutation({
+    onSuccess: () => {
+      toast.success("Campaign assigned");
+      setAssigningItem(null);
+      setSelectedCampaignId("none");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Failed to assign campaign: ${error.message}`);
     },
   });
 
@@ -213,6 +233,22 @@ export default function ContentLibrary() {
       content: editContent,
       hashtags: editHashtags || undefined,
       status: editStatus,
+    });
+  };
+  
+  const openAssignCampaignModal = (item: any) => {
+    setAssigningItem(item);
+    setSelectedCampaignId(item.campaignId ? String(item.campaignId) : "none");
+  };
+  
+  const handleAssignCampaign = () => {
+    if (!assigningItem) return;
+    
+    const campaignId = selectedCampaignId === "none" ? null : parseInt(selectedCampaignId);
+    
+    assignCampaignMutation.mutate({
+      contentId: assigningItem.id,
+      campaignId,
     });
   };
 
@@ -461,6 +497,14 @@ export default function ContentLibrary() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => openAssignCampaignModal(item)}
+                          title="Assign to Campaign"
+                        >
+                          📁
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleDelete(item.id)}
                           disabled={deleteMutation.isPending}
                         >
@@ -530,6 +574,14 @@ export default function ContentLibrary() {
                               onClick={() => openEditModal(item)}
                             >
                               <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openAssignCampaignModal(item)}
+                              title="Assign to Campaign"
+                            >
+                              📁
                             </Button>
                             <Button
                               variant="outline"
@@ -613,6 +665,57 @@ export default function ContentLibrary() {
                 </>
               ) : (
                 "Save Changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Assign Campaign Dialog */}
+      <Dialog open={!!assigningItem} onOpenChange={(open) => !open && setAssigningItem(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign to Campaign</DialogTitle>
+            <DialogDescription>
+              Choose a campaign for this content or remove it from its current campaign.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="campaign-select">Campaign</Label>
+              <Select value={selectedCampaignId} onValueChange={setSelectedCampaignId}>
+                <SelectTrigger id="campaign-select">
+                  <SelectValue placeholder="Select a campaign" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Campaign</SelectItem>
+                  {campaigns?.map((campaign) => (
+                    <SelectItem key={campaign.id} value={String(campaign.id)}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssigningItem(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignCampaign}
+              disabled={assignCampaignMutation.isPending}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {assignCampaignMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                "Assign"
               )}
             </Button>
           </DialogFooter>

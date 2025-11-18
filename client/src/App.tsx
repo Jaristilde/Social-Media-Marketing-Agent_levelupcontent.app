@@ -10,6 +10,7 @@ import AppProfile from "./pages/AppProfile";
 import ContentGenerator from "./pages/ContentGenerator";
 import ContentLibrary from "./pages/ContentLibrary";
 import Campaigns from "./pages/Campaigns";
+import CampaignDetail from "./pages/CampaignDetail";
 import SocialAccounts from "./pages/SocialAccounts";
 import PostingGuide from "./pages/PostingGuide";
 
@@ -22,6 +23,7 @@ function Router() {
       <Route path={"/generate"} component={ContentGenerator} />
       <Route path={"/library"} component={ContentLibrary} />
       <Route path={"/campaigns"} component={Campaigns} />
+      <Route path={"/campaigns/:id"} component={CampaignDetail} />
       <Route path={"/accounts"} component={SocialAccounts} />
       <Route path={"/guide"} component={PostingGuide} />
       <Route path={"/404"} component={NotFound} />

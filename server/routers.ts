@@ -17,9 +17,11 @@ import {
   updateContent,
   deleteContent,
   getCampaignsByUserId,
+  getCampaignById,
   createCampaign,
   updateCampaign,
   deleteCampaign,
+  assignContentToCampaign,
 } from "./db";
 
 export const appRouter = router({
@@ -271,6 +273,19 @@ ${profile.targetAudience ? `Target Audience: ${profile.targetAudience}` : ''}`;
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         return await getContentByCampaignId(input.id);
+      }),
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await getCampaignById(input.id);
+      }),
+    assignContent: protectedProcedure
+      .input(z.object({
+        contentId: z.number(),
+        campaignId: z.number().nullable(),
+      }))
+      .mutation(async ({ input }) => {
+        return await assignContentToCampaign(input.contentId, input.campaignId);
       }),
   }),
 });
