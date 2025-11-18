@@ -43,3 +43,13 @@
 
 ## Bug Fixes
 - [x] Fix React render error in Home component - navigation during render phase
+
+## Posting Guide Page
+- [x] Create tabbed interface for Instagram and TikTok
+- [x] Add Instagram posting guide with 7 steps
+- [x] Add TikTok posting guide with 7 steps
+- [x] Include placeholder images for each step
+- [x] Add best practices section (posting times, hashtag tips, engagement tips)
+- [x] Implement copy-to-clipboard functionality
+- [x] Ensure mobile-responsive design
+- [x] Match purple/pink gradient theme
